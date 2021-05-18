@@ -7,50 +7,50 @@ import java.io.FileNotFoundException;
 public class Chip {
 
 	private short opcode;
-	private byte[] memory = new byte[4096];
-	private byte[] V = new byte[16];
+	private short[] memory = new short[4096];
+	private short[] V = new short[16];
 
 	// Index register & Program counter, which can have a value from 0x000 to 0xFFF
-	private byte I;
+	private short I;
 	private short pc;
 
 	// Not sure what memory map is but it goes here
 	
 
-	private byte[] gfx = new byte[64 * 32];
+	private short[] gfx = new short[64 * 32];
 
 	// timers
-	private byte delay_timer;
-	private byte sound_timer;
+	private short delay_timer;
+	private short sound_timer;
 	
 	// stack and stack pointer
-	private byte stack[];
-	private byte stackPointer;
+	private short stack[];
+	private short stackPointer;
 
 	// hex based keypad
-	private byte[] key = new byte[16];
+	private short[] key = new short[16];
 
 
 
 	// font set for rendering
 	final int FONTSET_SIZE = 0x50;
-	private static byte[] fontset = new byte[]{
-		(byte)0xF0,(byte)0x90,(byte)0x90,(byte)0x90,(byte)0xF0,
-		(byte)0x20,(byte)0x60,(byte)0x20,(byte)0x20,(byte)0x70,
-		(byte)0xF0,(byte)0x10,(byte)0xF0,(byte)0x80,(byte)0xF0,
-		(byte)0xF0,(byte)0x10,(byte)0xF0,(byte)0x10,(byte)0xF0,
-		(byte)0x90,(byte)0x90,(byte)0xF0,(byte)0x10,(byte)0x10,
-		(byte)0xF0,(byte)0x80,(byte)0xF0,(byte)0x10,(byte)0xF0,
-		(byte)0xF0,(byte)0x80,(byte)0xF0,(byte)0x90,(byte)0xF0,
-		(byte)0xF0,(byte)0x10,(byte)0x20,(byte)0x40,(byte)0x40,
-		(byte)0xF0,(byte)0x90,(byte)0xF0,(byte)0x90,(byte)0xF0,
-		(byte)0xF0,(byte)0x90,(byte)0xF0,(byte)0x10,(byte)0xF0,
-		(byte)0xF0,(byte)0x90,(byte)0xF0,(byte)0x90,(byte)0x90,
-		(byte)0xE0,(byte)0x90,(byte)0xE0,(byte)0x90,(byte)0xE0,
-		(byte)0xF0,(byte)0x80,(byte)0x80,(byte)0x80,(byte)0xF0,
-		(byte)0xE0,(byte)0x90,(byte)0x90,(byte)0x90,(byte)0xE0,
-		(byte)0xF0,(byte)0x80,(byte)0xF0,(byte)0x80,(byte)0xF0,
-		(byte)0xF0,(byte)0x80,(byte)0xF0,(byte)0x80,(byte)0x80
+	private static short[] fontset = new short[]{
+		0xF0,0x90,0x90,0x90,0xF0,
+		0x20,0x60,0x20,0x20,0x70,
+		0xF0,0x10,0xF0,0x80,0xF0,
+		0xF0,0x10,0xF0,0x10,0xF0,
+		0x90,0x90,0xF0,0x10,0x10,
+		0xF0,0x80,0xF0,0x10,0xF0,
+		0xF0,0x80,0xF0,0x90,0xF0,
+		0xF0,0x10,0x20,0x40,0x40,
+		0xF0,0x90,0xF0,0x90,0xF0,
+		0xF0,0x90,0xF0,0x10,0xF0,
+		0xF0,0x90,0xF0,0x90,0x90,
+		0xE0,0x90,0xE0,0x90,0xE0,
+		0xF0,0x80,0x80,0x80,0xF0,
+		0xE0,0x90,0x90,0x90,0xE0,
+		0xF0,0x80,0xF0,0x80,0xF0,
+		0xF0,0x80,0xF0,0x80,0x80
 	};
 
 	// Chip constructor
@@ -67,7 +67,7 @@ public class Chip {
 			memory[j] = scan.nextByte();
 			j++;
 		}
-		pc = (byte) 0x200;
+		pc = 0x200;
 		
 	}
 
@@ -81,17 +81,18 @@ public class Chip {
 	}
 	// fetches opcode
 	public short fetch() {
-		byte high = memory[pc++];
-		byte low = memory[pc++];
+		short high = memory[pc++];
+		short low = memory[pc++];
 
-		return (short) (high << 8 | low);
+		return (high << 8 | low);
 	}
 	// decodes opcode
 	public void decode(short opcode){
-		byte nibble0 = (byte) ((opcode & 0xF000) >> 12);
-		byte nibble1 = (byte) ((opcode & 0x0F00) >> 8);
-		byte nibble2 = (byte) ((opcode & 0x00F0) >> 4);
-		byte nibble3 = (byte) (opcode & 0x000F);
+		short nibble0 = ((opcode & 0xF000) >> 12);
+		short nibble1 = ((opcode & 0x0F00) >> 8);
+		short nibble2 = ((opcode & 0x00F0) >> 4);
+		short nibble3 = (opcode & 0x000F);
+		V[0xF] = ((opcode & 0xF000) >> 16);
 
 		switch(nibble0) {
 			case 0:
@@ -99,10 +100,10 @@ public class Chip {
 
 
 			case 1:
-				pc = (short) (opcode & 0x0FFF);
+				pc = (opcode & 0x0FFF);
 				break;
 			case 2:
-				pc = (short) (opcode & 0x0FFF);
+				pc = (opcode & 0x0FFF);
 				break;
 			case 3: 
 				if (V[nibble1] == 0x00FF) {
@@ -120,7 +121,7 @@ public class Chip {
 				}
 				break;
 			case 6:
-				V[nibble1] = (byte) (opcode & 0x00FF);
+				V[nibble1] = (opcode & 0x00FF);
 				break;
 			case 7:
 				V[nibble1] += (opcode & 0x00FF);
@@ -131,22 +132,34 @@ public class Chip {
 						V[nibble1] = V[nibble2];
 						break;
 					case 1:
-						V[nibble1] = (byte) (V[nibble1] | V[nibble2]);
+						V[nibble1] = (V[nibble1] | V[nibble2]);
 						break;
 					case 2:
-						V[nibble1] = (byte) (V[nibble1] & V[nibble2]);
+						V[nibble1] = (V[nibble1] & V[nibble2]);
 						break;
 					case 3:
-						V[nibble1] = (byte) (V[nibble1] ^ V[nibble2]);
+						V[nibble1] = (V[nibble1] ^ V[nibble2]);
 						break;
 					case 4:
-
+						if (V[nibble1] + V[nibble2] > 0xFF) {
+							V[0xF] = 1; // carry
+						}		
+						else {
+							V[0xF] = 0;
+						}	
+						V[nibble1] += V[nibble2];
 						break;
 					case 5:
-
+						if (V[nibble1] - V[nibble2] <  0x00) {
+							V[0xF] = 1; // borrow
+						}		
+						else {
+							V[0xF] = 0;
+						}	
+						V[nibble1] -= V[nibble2];
 						break;
 					case 6:
-
+						
 						break;
 					case 7:
 
@@ -179,10 +192,8 @@ public class Chip {
 		} catch (FileNotFoundException e) {
 			System.out.println(e.getMessage());
 			System.exit(1);
-		}
-
+		}	
 
 	}
-
 
 }
