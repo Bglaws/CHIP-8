@@ -194,20 +194,22 @@ public class Chip {
 				short pixel;
 
 				// carry flag is reset so it can be used to signal collision
-				V[0xF];
+				V[0xF] = 0;
 				for (int yL = 0; yL < height; yL++) { // loop over each row
 
 					// fetches pixel from memory starting from I
 					pixel = memory[I + yL];
 					for (int xL = 0; xL < 8; xL++) { //loops through 8 bits of one row
-
+						
 						// if current pixel is already on, check for collision
 						if (pixel & 0x80 >> xL != 0) {
 
 							// if current pixel AND display pixel both set to 1,
 							// a collision has occured
-							if () {
-
+							// what does this if statement do?
+							if (gfx[(x + xLine + ((y yLine) * 64))] == 1) {
+								V[0xF] = 1;
+								
 							}
 
 						}
