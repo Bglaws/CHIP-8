@@ -18,8 +18,8 @@ public class Chip {
 	private short[] gfx = new short[64 * 32];
 
 	// timers
-	private short delay_timer;
-	private short sound_timer;
+	private short delayTimer;
+	private short soundTimer;
 
 	// stack and stack pointer
 	private short stack[];
@@ -37,15 +37,15 @@ public class Chip {
 		0xF0, 0x10, 0xF0, 0x10, 0xF0, 
 		0x90, 0x90, 0xF0, 0x10, 0x10, 
 		0xF0, 0x80, 0xF0, 0x10,	0xF0,
-	        0xF0, 0x80, 0xF0, 0x90, 0xF0,
-	        0xF0, 0x10, 0x20, 0x40, 0x40, 
+	    0xF0, 0x80, 0xF0, 0x90, 0xF0,
+	    0xF0, 0x10, 0x20, 0x40, 0x40, 
 		0xF0, 0x90, 0xF0, 0x90, 0xF0,
 		0xF0, 0x90, 0xF0, 0x10, 0xF0, 
 		0xF0, 0x90, 0xF0, 0x90, 0x90, 
 		0xE0, 0x90, 0xE0, 0x90, 0xE0, 
 		0xF0, 0x80, 0x80, 0x80, 0xF0,
 		0xE0, 0x90, 0x90, 0x90, 0xE0,
-	        0xF0, 0x80, 0xF0, 0x80, 0xF0, 
+	    0xF0, 0x80, 0xF0, 0x80, 0xF0, 
 		0xF0, 0x80, 0xF0, 0x80, 0x80 
 	};
 
@@ -142,7 +142,7 @@ public class Chip {
 						} else {
 							V[0xF] = 0;
 						}
-						V[nibble1] = (V[nibble2] + V[nibble1]) % 256;
+						V[nibble1] = (short) ((V[nibble2] + V[nibble1]) % 256);
 						break;
 					case 5:
 						if (V[nibble1] - V[nibble2] < 0x00) {
@@ -150,11 +150,11 @@ public class Chip {
 						} else {
 							V[0xF] = 0;
 						}
-						V[nibble1] = (V[nibble2] - V[nibble1]) % 256;
+						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
 						break;
 					case 6:
-						V[0xF] = V[nibble1] & 0x01;
-						V[nibble1] >> 1;
+						V[0xF] = (short) (V[nibble1] & 0x01);
+						V[nibble1] >>= 1;
 						break;
 					case 7:
 						if (V[nibble2] - V[nibble1] < 0xFF) {
@@ -163,11 +163,11 @@ public class Chip {
 						else {
 							V[0xF] = 0;
 						}
-						V[nibble1] = (V[nibble2] - V[nibble1]) % 256;
+						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
 						break;
 					case 0xE:
-						V[0xF] = V[nibble1] & 0xF;
-						V[nibble1] << 1;
+						V[0xF] = (short) (V[nibble1] & 0xF);
+						V[nibble1] <<= 1;
 						break;
 				}
 
@@ -177,20 +177,19 @@ public class Chip {
 				}	
 				break;
 			case 0xA:
-				I = (opcode & 0x0FFF);
+				I = (short) (opcode & 0x0FFF);
 				break;
 			case 0xB:
-				pc = V[0] + (opcode & 0x0FFF);
+				pc = (short) (V[0] + (opcode & 0x0FFF));
 				break;
 			case 0xC:
-				V[nibble1] = ((int) java.lang.Math.random() & (opcode & 0x00FF);
+				V[nibble1] = (short) ((int) java.lang.Math.random() & (opcode & 0x00FF));
 				break;
 			case 0xD:
 
-				// ask kyle what height is
 				short x = V[nibble1];
 				short y = V[nibble2];
-				short height = V[nibble3];
+				short height = nibble3;
 				short pixel;
 
 				// carry flag is reset so it can be used to signal collision
@@ -201,37 +200,51 @@ public class Chip {
 					pixel = memory[I + yL];
 					for (int xL = 0; xL < 8; xL++) { //loops through 8 bits of one row
 						
+						// 0x80 = 1000 0000
+						// by incrementing xL, every bit will be checked 
 						// if current pixel is already on, check for collision
-						if (pixel & 0x80 >> xL != 0) {
+						if ((pixel & (0x80 >> xL)) != 0) {
 
 							// if current pixel AND display pixel both set to 1,
 							// a collision has occured
-							// what does this if statement do?
-							if (gfx[(x + xLine + ((y yLine) * 64))] == 1) {
+							if (gfx[(x + xL + ((y + yL) * 64))] == 1) {
 								V[0xF] = 1;
-								
+								gfx[x + xL + ((y + yL) * 64)] ^= 1;							
 							}
 
-						}
-										
+						}	
 					
 					}
-
+					// drawFlag = true;
 				}
 				break;
 			case 0xE:
 				switch(opcode & 0x00FF) {
 					case 0x9E:
+						if (key[V[nibble1]] != 0) {
+							pc += 2;
+						}
 						break;
 					case 0xA1:
+						if (key[V[nibble1]] == 0) {
+							pc += 2;
+						}
 						break;
-				{
+				}
 
 			case 0xF:
 				switch (opcode & 0x00FF) { 
 					case 0x07:
+						V[nibble1] = delayTimer;
 						break;
 					case 0x0A:
+						for (int i = 0; i < key.length; i++) {
+							if (key[i] == 1) {
+								V[nibble1] = key[i];
+								break;
+							}
+						}
+						pc -= 2;						
 						break;
 					case 0x15:
 						break;
