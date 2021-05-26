@@ -2,6 +2,7 @@
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 
 public class Chip {
 
@@ -30,24 +31,11 @@ public class Chip {
 
 	// font set for rendering
 	final int FONTSET_SIZE = 0x50;
-	private static short[] fontset = new short[] { 
-		0xF0, 0x90, 0x90, 0x90, 0xF0,
-		0x20, 0x60, 0x20, 0x20, 0x70, 
-		0xF0, 0x10, 0xF0, 0x80, 0xF0, 
-		0xF0, 0x10, 0xF0, 0x10, 0xF0, 
-		0x90, 0x90, 0xF0, 0x10, 0x10, 
-		0xF0, 0x80, 0xF0, 0x10,	0xF0,
-	    0xF0, 0x80, 0xF0, 0x90, 0xF0,
-	    0xF0, 0x10, 0x20, 0x40, 0x40, 
-		0xF0, 0x90, 0xF0, 0x90, 0xF0,
-		0xF0, 0x90, 0xF0, 0x10, 0xF0, 
-		0xF0, 0x90, 0xF0, 0x90, 0x90, 
-		0xE0, 0x90, 0xE0, 0x90, 0xE0, 
-		0xF0, 0x80, 0x80, 0x80, 0xF0,
-		0xE0, 0x90, 0x90, 0x90, 0xE0,
-	    0xF0, 0x80, 0xF0, 0x80, 0xF0, 
-		0xF0, 0x80, 0xF0, 0x80, 0x80 
-	};
+	private static short[] fontset = new short[] { 0xF0, 0x90, 0x90, 0x90, 0xF0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xF0,
+			0x10, 0xF0, 0x80, 0xF0, 0xF0, 0x10, 0xF0, 0x10, 0xF0, 0x90, 0x90, 0xF0, 0x10, 0x10, 0xF0, 0x80, 0xF0, 0x10,
+			0xF0, 0xF0, 0x80, 0xF0, 0x90, 0xF0, 0xF0, 0x10, 0x20, 0x40, 0x40, 0xF0, 0x90, 0xF0, 0x90, 0xF0, 0xF0, 0x90,
+			0xF0, 0x10, 0xF0, 0xF0, 0x90, 0xF0, 0x90, 0x90, 0xE0, 0x90, 0xE0, 0x90, 0xE0, 0xF0, 0x80, 0x80, 0x80, 0xF0,
+			0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80, 0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80 };
 
 	// Chip constructor
 	public Chip(String path) throws FileNotFoundException {
@@ -93,7 +81,18 @@ public class Chip {
 
 		switch (nibble0) {
 			case 0:
-				// use if statements instead of switch
+				if (V[nibble3] == 0x0) {
+					Arrays.fill(gfx, (short) 0);
+					break;
+				} else if (V[nibble3] == 0xE) {
+					// Returns from a subroutine???
+				}
+				// this is really the first opcode but since nibble 3 is generic
+				// and the other nibbles are identical to the two opcodes above it,
+				// an else statement is the easiest way to call it.
+				else {
+
+				}
 
 			case 1:
 				pc = (short) (opcode & 0x0FFF);
@@ -159,8 +158,7 @@ public class Chip {
 					case 7:
 						if (V[nibble2] - V[nibble1] < 0xFF) {
 							V[0xF] = 1; // borrow
-						}
-						else {
+						} else {
 							V[0xF] = 0;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
@@ -174,7 +172,7 @@ public class Chip {
 			case 9:
 				if (V[nibble1] != V[nibble2]) {
 					pc += 2;
-				}	
+				}
 				break;
 			case 0xA:
 				I = (short) (opcode & 0x0FFF);
@@ -198,10 +196,10 @@ public class Chip {
 
 					// fetches pixel from memory starting from I
 					pixel = memory[I + yL];
-					for (int xL = 0; xL < 8; xL++) { //loops through 8 bits of one row
-						
+					for (int xL = 0; xL < 8; xL++) { // loops through 8 bits of one row
+
 						// 0x80 = 1000 0000
-						// by incrementing xL, every bit will be checked 
+						// by incrementing xL, every bit will be checked
 						// if current pixel is already on, check for collision
 						if ((pixel & (0x80 >> xL)) != 0) {
 
@@ -209,17 +207,17 @@ public class Chip {
 							// a collision has occured
 							if (gfx[(x + xL + ((y + yL) * 64))] == 1) {
 								V[0xF] = 1;
-								gfx[x + xL + ((y + yL) * 64)] ^= 1;							
+								gfx[x + xL + ((y + yL) * 64)] ^= 1;
 							}
 
-						}	
-					
+						}
+
 					}
 					// drawFlag = true;
 				}
 				break;
 			case 0xE:
-				switch(opcode & 0x00FF) {
+				switch (opcode & 0x00FF) {
 					case 0x9E:
 						if (key[V[nibble1]] != 0) {
 							pc += 2;
@@ -233,7 +231,7 @@ public class Chip {
 				}
 
 			case 0xF:
-				switch (opcode & 0x00FF) { 
+				switch (opcode & 0x00FF) {
 					case 0x07:
 						V[nibble1] = delayTimer;
 						break;
@@ -244,15 +242,19 @@ public class Chip {
 								break;
 							}
 						}
-						pc -= 2;						
+						pc -= 2;
 						break;
 					case 0x15:
+						delayTimer = V[nibble1];
 						break;
 					case 0x18:
+						soundTimer = V[nibble1];
 						break;
 					case 0x1E:
+						I += V[nibble1];
 						break;
 					case 0x29:
+
 						break;
 					case 0x33:
 						break;
@@ -260,7 +262,7 @@ public class Chip {
 						break;
 					case 0x65:
 						break;
-				}	
+				}
 		}
 	}
 
