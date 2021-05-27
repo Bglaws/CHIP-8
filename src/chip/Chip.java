@@ -22,8 +22,7 @@ public class Chip {
 	private short delayTimer;
 	private short soundTimer;
 
-	// stack and stack pointer
-	private short stack[];
+	// stack pointer
 	private short stackPointer;
 
 	// hex based keypad
@@ -80,18 +79,20 @@ public class Chip {
 		V[0xF] = (short) ((opcode & 0xF000) >> 16);
 
 		switch (nibble0) {
-			case 0:
-				if (V[nibble3] == 0x0) {
-					Arrays.fill(gfx, (short) 0);
-					break;
-				} else if (V[nibble3] == 0xE) {
-					// Returns from a subroutine???
-				}
-				// this is really the first opcode but since nibble 3 is generic
-				// and the other nibbles are identical to the two opcodes above it,
-				// an else statement is the easiest way to call it.
-				else {
 
+			case 0:
+				switch (nibble3) {
+
+					case 0:
+						if (V[nibble3] == 0x0) {
+							Arrays.fill(gfx, (short) 0);
+						}
+						break;
+					case 0xE:
+						if (V[nibble3] == 0xE) {
+							stackPointer--;
+						}
+						break;
 				}
 
 			case 1:
@@ -254,15 +255,18 @@ public class Chip {
 						I += V[nibble1];
 						break;
 					case 0x29:
-
+						I = V[nibble1];
 						break;
 					case 0x33:
+
 						break;
 					case 0x55:
 						break;
 					case 0x65:
 						break;
 				}
+			default:
+				System.out.println("Error: invalid opcode");
 		}
 	}
 
