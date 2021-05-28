@@ -50,7 +50,9 @@ public class Chip {
 			memory[j] = scan.nextByte();
 			j++;
 		}
+		// stack implemented at the end of memory
 		stackPointer = 0xF00;
+		// ROM loaded in at this address
 		pc = 0x200;
 
 	}
@@ -86,16 +88,19 @@ public class Chip {
 
 					case 0x0:
 						Arrays.fill(gfx, (short) 0);
+						System.out.println("clears the display.");
 						return;
 					case 0xE:
 						short highByte = memory[stackPointer++];
 						short lowByte = memory[stackPointer++];
 						pc = (short) ((highByte << 8) + lowByte);
+						System.out.println("returns from a subroutine.");
 						return;
 				}
 
 			case 1:
 				pc = (short) (opcode & 0x0FFF);
+				System.out.println("jumps to another instruction in memory (sets pc to nnn)");
 				return;
 			case 2:
 				short lowByte = (short) (pc & 0x00FF);
@@ -103,41 +108,51 @@ public class Chip {
 				memory[stackPointer--] = lowByte;
 				memory[stackPointer--] = highByte;
 				pc = (short) (opcode & 0x0FFF);
+				System.out.println("calls a subroutine (current pc is set to the top of the stack then pc set to nnn)");
 				return;
 			case 3:
 				if (V[nibble1] == 0x00FF) {
 					pc += 2;
 				}
+				System.out.println("skip next instruction if Vx = nn");
 				return;
 			case 4:
 				if (V[nibble1] != (opcode & 0x00FF)) {
 					pc += 2;
 				}
+				System.out.println("skip next instruction if Vx != nn");
 				return;
 			case 5:
 				if (V[nibble1] == V[nibble2]) {
 					pc += 2;
 				}
+				System.out.println("skips next instruction if Vx = Vy");
 				return;
 			case 6:
 				V[nibble1] = (short) (opcode & 0x00FF);
+				System.out.println("set Vx = kk");
 				return;
 			case 7:
 				V[nibble1] += (opcode & 0x00FF);
+				System.out.println("set Vx = Vx + kk");
 				return;
 			case 8:
 				switch (nibble3) {
 					case 0:
 						V[nibble1] = V[nibble2];
+						System.out.println("set Vx = Vy");
 						return;
 					case 1:
 						V[nibble1] = (short) (V[nibble1] | V[nibble2]);
+						System.out.println("set Vx = Vx OR Vy");
 						return;
 					case 2:
 						V[nibble1] = (short) (V[nibble1] & V[nibble2]);
+						System.out.println("set Vx = Vx AND Vy");
 						return;
 					case 3:
 						V[nibble1] = (short) (V[nibble1] ^ V[nibble2]);
+						System.out.println("set Vx = Vx XOR Vy");
 						return;
 					case 4:
 						if (V[nibble1] + V[nibble2] > 0xFF) {
@@ -146,30 +161,37 @@ public class Chip {
 							V[0xF] = 0;
 						}
 						V[nibble1] = (short) ((V[nibble2] + V[nibble1]) % 256);
-						break;
+						System.out.println("set Vx = Vx + Vy. if the sum is greater than 0xFF, carry flag is set");
+						return;
 					case 5:
 						if (V[nibble1] - V[nibble2] < 0x00) {
-							V[0xF] = 1; // borrow
+							V[0xF] = 0; // borrow
 						} else {
-							V[0xF] = 0;
+							V[0xF] = 1;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
+						System.out.println(
+								"set Vx = Vx - Vy. set VF to 0 when there is a borrow and to 1 when there is not");
 						return;
 					case 6:
 						V[0xF] = (short) (V[nibble1] & 0x01);
 						V[nibble1] >>= 1;
+						System.out.println("store least signifigant bit of Vx in VF, then shifts Vx to the left by 1");
 						return;
 					case 7:
 						if (V[nibble2] - V[nibble1] < 0xFF) {
-							V[0xF] = 1; // borrow
+							V[0xF] = 0; // borrow
 						} else {
-							V[0xF] = 0;
+							V[0xF] = 1;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
+						System.out.println(
+								"set Vx = Vy - VX. set VF to 0 when there is a borrow and to 1 when there is not");
 						return;
 					case 0xE:
 						V[0xF] = (short) (V[nibble1] & 0xF);
 						V[nibble1] <<= 1;
+						System.out.println("store most signifigant bit of Vx in VF, then shifts Vx to the left by 1");
 						return;
 				}
 
@@ -177,15 +199,19 @@ public class Chip {
 				if (V[nibble1] != V[nibble2]) {
 					pc += 2;
 				}
+				System.out.println("skip next instruction if Vx != Vy");
 				return;
 			case 0xA:
 				I = (short) (opcode & 0x0FFF);
+				System.out.println("set I to address nnn");
 				return;
 			case 0xB:
 				pc = (short) (V[0] + (opcode & 0x0FFF));
+				System.out.println("jump to address nnn + V[0]");
 				return;
 			case 0xC:
 				V[nibble1] = (short) ((int) java.lang.Math.random() & (opcode & 0x00FF));
+				System.out.println("set Vx = random number & nn");
 				return;
 			case 0xD:
 
@@ -219,6 +245,8 @@ public class Chip {
 					}
 					// drawFlag = true;
 				}
+				System.out.println(
+						"draws sprite at coordinate Vx,Vy. VF is set to 1 if there is a collision between sprites and 0 if there is not");
 				return;
 			case 0xE:
 				switch (opcode & 0x00FF) {
@@ -226,11 +254,13 @@ public class Chip {
 						if (key[V[nibble1]] != 0) {
 							pc += 2;
 						}
+						System.out.println("skip next instruction if key stored in Vx is pressed");
 						return;
 					case 0xA1:
 						if (key[V[nibble1]] == 0) {
 							pc += 2;
 						}
+						System.out.println("skip next instruction if key stored in Vx is not pressed");
 						return;
 				}
 
@@ -238,43 +268,55 @@ public class Chip {
 				switch (opcode & 0x00FF) {
 					case 0x07:
 						V[nibble1] = delayTimer;
+						System.out.println("set Vx to the value of the delay timer");
 						return;
 					case 0x0A:
 						for (int i = 0; i < key.length; i++) {
 							if (key[i] == 1) {
 								V[nibble1] = key[i];
+								System.out.println(
+										"a key press is awaited, and then stored in Vx. (this instruction is repeated until a key is pressed");
 								return;
 							}
 						}
 						pc -= 2;
+						System.out.println("key is not pressed, pc -=2, check for key press again");
 						return;
 					case 0x15:
 						delayTimer = V[nibble1];
+						System.out.println("set the delay timer to Vx");
 						return;
 					case 0x18:
 						soundTimer = V[nibble1];
+						System.out.println("set sound timer to Vx");
 						return;
 					case 0x1E:
 						I += V[nibble1];
+						System.out.println("add Vx to I. VF is not affected");
 						return;
 					case 0x29:
 						I = V[nibble1];
+						System.out.println("set I to the location of the sprite for the character in Vx");
 						return;
 					case 0x33:
 						// converts Vx to binary and stores each succesivly in memory
 						memory[I] = (short) (V[nibble1] / 100);
 						memory[I + 1] = (short) ((V[nibble1] / 10) % 10);
 						memory[I + 2] = (short) ((V[nibble1] / 100) % 10);
+						System.out.println(
+								"Stores BCD of Vx (first 3 bits) in memory starting at I (first bit at I, second I + 1, third I + 2)");
 						return;
 					case 0x55:
 						for (int i = 0; i <= nibble1; i++) {
 							memory[I + i] = V[i];
 						}
+						System.out.println("store V0 to Vx in memory starting at address I");
 						return;
 					case 0x65:
 						for (int i = 0; i <= nibble1; i++) {
 							V[i] = memory[I + i];
 						}
+						System.out.println("Fills V0 to Vx with values from memory starting at address I");
 						return;
 				}
 		}
