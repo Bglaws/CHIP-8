@@ -50,6 +50,7 @@ public class Chip {
 			memory[j] = scan.nextByte();
 			j++;
 		}
+		stackPointer = 0xF00;
 		pc = 0x200;
 
 	}
@@ -83,59 +84,61 @@ public class Chip {
 			case 0:
 				switch (nibble3) {
 
-					case 0:
-						if (V[nibble3] == 0x0) {
-							Arrays.fill(gfx, (short) 0);
-						}
-						break;
+					case 0x0:
+						Arrays.fill(gfx, (short) 0);
+						return;
 					case 0xE:
-						if (V[nibble3] == 0xE) {
-							stackPointer--;
-						}
-						break;
+						short highByte = memory[stackPointer++];
+						short lowByte = memory[stackPointer++];
+						pc = (short) ((highByte << 8) + lowByte);
+						return;
 				}
 
 			case 1:
 				pc = (short) (opcode & 0x0FFF);
-				break;
+				return;
 			case 2:
+				short lowByte = (short) (pc & 0x00FF);
+				short highByte = (short) ((pc & 0xFF00) >> 8);
+				memory[stackPointer--] = lowByte;
+				memory[stackPointer--] = highByte;
 				pc = (short) (opcode & 0x0FFF);
-				break;
+				return;
 			case 3:
 				if (V[nibble1] == 0x00FF) {
 					pc += 2;
 				}
-				break;
+				return;
 			case 4:
 				if (V[nibble1] != (opcode & 0x00FF)) {
 					pc += 2;
 				}
-				break;
+				return;
 			case 5:
 				if (V[nibble1] == V[nibble2]) {
 					pc += 2;
 				}
-				break;
+				return;
 			case 6:
 				V[nibble1] = (short) (opcode & 0x00FF);
-				break;
+				return;
 			case 7:
 				V[nibble1] += (opcode & 0x00FF);
-				break;
+				return;
 			case 8:
 				switch (nibble3) {
 					case 0:
 						V[nibble1] = V[nibble2];
-						break;
+						return;
 					case 1:
 						V[nibble1] = (short) (V[nibble1] | V[nibble2]);
-						break;
+						return;
 					case 2:
 						V[nibble1] = (short) (V[nibble1] & V[nibble2]);
-						break;
+						return;
 					case 3:
 						V[nibble1] = (short) (V[nibble1] ^ V[nibble2]);
-						break;
+						return;
 					case 4:
 						if (V[nibble1] + V[nibble2] > 0xFF) {
 							V[0xF] = 1; // carry
@@ -151,11 +154,11 @@ public class Chip {
 							V[0xF] = 0;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
-						break;
+						return;
 					case 6:
 						V[0xF] = (short) (V[nibble1] & 0x01);
 						V[nibble1] >>= 1;
-						break;
+						return;
 					case 7:
 						if (V[nibble2] - V[nibble1] < 0xFF) {
 							V[0xF] = 1; // borrow
@@ -163,27 +166,27 @@ public class Chip {
 							V[0xF] = 0;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
-						break;
+						return;
 					case 0xE:
 						V[0xF] = (short) (V[nibble1] & 0xF);
 						V[nibble1] <<= 1;
-						break;
+						return;
 				}
 
 			case 9:
 				if (V[nibble1] != V[nibble2]) {
 					pc += 2;
 				}
-				break;
+				return;
 			case 0xA:
 				I = (short) (opcode & 0x0FFF);
-				break;
+				return;
 			case 0xB:
 				pc = (short) (V[0] + (opcode & 0x0FFF));
-				break;
+				return;
 			case 0xC:
 				V[nibble1] = (short) ((int) java.lang.Math.random() & (opcode & 0x00FF));
-				break;
+				return;
 			case 0xD:
 
 				short x = V[nibble1];
@@ -197,7 +200,9 @@ public class Chip {
 
 					// fetches pixel from memory starting from I
 					pixel = memory[I + yL];
-					for (int xL = 0; xL < 8; xL++) { // loops through 8 bits of one row
+					// loops through 8 bits of one row, since sprites are 8 bits (pixels) wide.
+					// Sprites can have a height between 0 and 15.
+					for (int xL = 0; xL < 8; xL++) {
 
 						// 0x80 = 1000 0000
 						// by incrementing xL, every bit will be checked
@@ -210,64 +215,70 @@ public class Chip {
 								V[0xF] = 1;
 								gfx[x + xL + ((y + yL) * 64)] ^= 1;
 							}
-
 						}
-
 					}
 					// drawFlag = true;
 				}
-				break;
+				return;
 			case 0xE:
 				switch (opcode & 0x00FF) {
 					case 0x9E:
 						if (key[V[nibble1]] != 0) {
 							pc += 2;
 						}
-						break;
+						return;
 					case 0xA1:
 						if (key[V[nibble1]] == 0) {
 							pc += 2;
 						}
-						break;
+						return;
 				}
 
 			case 0xF:
 				switch (opcode & 0x00FF) {
 					case 0x07:
 						V[nibble1] = delayTimer;
-						break;
+						return;
 					case 0x0A:
 						for (int i = 0; i < key.length; i++) {
 							if (key[i] == 1) {
 								V[nibble1] = key[i];
-								break;
+								return;
 							}
 						}
 						pc -= 2;
-						break;
+						return;
 					case 0x15:
 						delayTimer = V[nibble1];
-						break;
+						return;
 					case 0x18:
 						soundTimer = V[nibble1];
-						break;
+						return;
 					case 0x1E:
 						I += V[nibble1];
-						break;
+						return;
 					case 0x29:
 						I = V[nibble1];
-						break;
+						return;
 					case 0x33:
-
-						break;
+						// converts Vx to binary and stores each succesivly in memory
+						memory[I] = (short) (V[nibble1] / 100);
+						memory[I + 1] = (short) ((V[nibble1] / 10) % 10);
+						memory[I + 2] = (short) ((V[nibble1] / 100) % 10);
+						return;
 					case 0x55:
-						break;
+						for (int i = 0; i <= nibble1; i++) {
+							memory[I + i] = V[i];
+						}
+						return;
 					case 0x65:
-						break;
+						for (int i = 0; i <= nibble1; i++) {
+							V[i] = memory[I + i];
+						}
+						return;
 				}
-			default:
-				System.out.println("Error: invalid opcode");
 		}
+		System.out.println("Error: invalid opcode");
 	}
 
 	public static void main(String[] args) {
