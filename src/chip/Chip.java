@@ -88,71 +88,72 @@ public class Chip {
 
 					case 0x0:
 						Arrays.fill(gfx, (short) 0);
-						System.out.println("clears the display.");
+						System.out.println("clearscr");
 						return;
 					case 0xE:
 						short highByte = memory[stackPointer++];
 						short lowByte = memory[stackPointer++];
 						pc = (short) ((highByte << 8) + lowByte);
-						System.out.println("returns from a subroutine.");
+						System.out.println("ret");
 						return;
 				}
 
 			case 1:
 				pc = (short) (opcode & 0x0FFF);
-				System.out.println("jumps to another instruction in memory (sets pc to nnn)");
+				System.out.printf("jmp 0x%X\n", pc);
 				return;
 			case 2:
+				// current pc is set to the top of the stack then pc set to nnn
 				short lowByte = (short) (pc & 0x00FF);
 				short highByte = (short) ((pc & 0xFF00) >> 8);
 				memory[stackPointer--] = lowByte;
 				memory[stackPointer--] = highByte;
 				pc = (short) (opcode & 0x0FFF);
-				System.out.println("calls a subroutine (current pc is set to the top of the stack then pc set to nnn)");
+				System.out.printf("call 0x%X\n", pc);
 				return;
 			case 3:
-				if (V[nibble1] == 0x00FF) {
+				if (V[nibble1] == (opcode & 0x00FF)) {
 					pc += 2;
 				}
-				System.out.println("skip next instruction if Vx = nn");
+				System.out.printf("skip if %X", V[nibble1], " == %X\n", (opcode & 0x00FF));
 				return;
 			case 4:
 				if (V[nibble1] != (opcode & 0x00FF)) {
 					pc += 2;
 				}
-				System.out.println("skip next instruction if Vx != nn");
+				System.out.printf("skip if %X", V[nibble1], " != %X\n", (opcode & 0x00FF));
 				return;
 			case 5:
 				if (V[nibble1] == V[nibble2]) {
 					pc += 2;
 				}
-				System.out.println("skips next instruction if Vx = Vy");
+				System.out.printf("skip if %X", V[nibble1], " == %X\n", V[nibble2]);
 				return;
 			case 6:
 				V[nibble1] = (short) (opcode & 0x00FF);
-				System.out.println("set Vx = kk");
+				System.out.printf("set %X", V[nibble1], " = %X\n", (opcode & 0x00FF));
 				return;
 			case 7:
 				V[nibble1] += (opcode & 0x00FF);
-				System.out.println("set Vx = Vx + kk");
+				System.out.printf("set %X", V[nibble1], " += %X\n", (opcode & 0x00FF));
 				return;
 			case 8:
 				switch (nibble3) {
 					case 0:
 						V[nibble1] = V[nibble2];
-						System.out.println("set Vx = Vy");
+						System.out.printf("set %X", V[nibble1], " = %X\n", V[nibble2]);
 						return;
 					case 1:
 						V[nibble1] = (short) (V[nibble1] | V[nibble2]);
-						System.out.println("set Vx = Vx OR Vy");
+						System.out.printf("set %X", V[nibble1], " OR= %X\n", V[nibble2]);
 						return;
 					case 2:
 						V[nibble1] = (short) (V[nibble1] & V[nibble2]);
-						System.out.println("set Vx = Vx AND Vy");
+						System.out.printf("set %X", V[nibble1], " &= %X\n", V[nibble2]);
 						return;
 					case 3:
 						V[nibble1] = (short) (V[nibble1] ^ V[nibble2]);
-						System.out.println("set Vx = Vx XOR Vy");
+						System.out.printf("set %X", V[nibble1], " XOR= %X\n", V[nibble2]);
 						return;
 					case 4:
 						if (V[nibble1] + V[nibble2] > 0xFF) {
@@ -161,9 +162,10 @@ public class Chip {
 							V[0xF] = 0;
 						}
 						V[nibble1] = (short) ((V[nibble2] + V[nibble1]) % 256);
-						System.out.println("set Vx = Vx + Vy. if the sum is greater than 0xFF, carry flag is set");
+						System.out.printf("set %X", V[nibble1], " += %X.", V[nibble2], "flag = %X\n", V[0xF]);
 						return;
 					case 5:
+						// HERE!!!
 						if (V[nibble1] - V[nibble2] < 0x00) {
 							V[0xF] = 0; // borrow
 						} else {
