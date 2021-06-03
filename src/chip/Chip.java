@@ -172,13 +172,13 @@ public class Chip {
 							V[0xF] = 1;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
-						System.out.println(
-								"set Vx = Vx - Vy. set VF to 0 when there is a borrow and to 1 when there is not");
+						System.out.printf("set %X", V[nibble1], " -= %X.", V[nibble2], "flag = %X\n", V[0xF]);
 						return;
 					case 6:
-						V[0xF] = (short) (V[nibble1] & 0x01);
+						short leastSigBit = (short) (V[nibble1] & 0x01); 
+						V[0xF] = leastSigBit;
 						V[nibble1] >>= 1;
-						System.out.println("store least signifigant bit of Vx in VF, then shifts Vx to the left by 1");
+						System.out.printf("str %X", leastSigBit, " in VF. set %X", V[nibble1], " >>= 1\n");
 						return;
 					case 7:
 						if (V[nibble2] - V[nibble1] < 0xFF) {
@@ -187,13 +187,13 @@ public class Chip {
 							V[0xF] = 1;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
-						System.out.println(
-								"set Vx = Vy - VX. set VF to 0 when there is a borrow and to 1 when there is not");
+						System.out.printf("set %X", V[nibble1], " = %X.", V[nibble2], " - %X.", V[nibble1], "flag = %X\n", V[0xF]);
 						return;
 					case 0xE:
-						V[0xF] = (short) (V[nibble1] & 0xF);
+						short mostSigBit = (short) (V[nibble1] & 0xF);
+						V[0xF] = mostSigBit;
 						V[nibble1] <<= 1;
-						System.out.println("store most signifigant bit of Vx in VF, then shifts Vx to the left by 1");
+						System.out.printf("str %X", mostSigBit, " in VF. set %X", V[nibble1], " <<= 1\n");
 						return;
 				}
 
@@ -201,22 +201,22 @@ public class Chip {
 				if (V[nibble1] != V[nibble2]) {
 					pc += 2;
 				}
-				System.out.println("skip next instruction if Vx != Vy");
+				System.out.printf("skip if %X", V[nibble1], " != %X\n", V[nibble2]);
 				return;
 			case 0xA:
 				I = (short) (opcode & 0x0FFF);
-				System.out.println("set I to address nnn");
+				System.out.printf("set \n", I);
 				return;
 			case 0xB:
 				pc = (short) (V[0] + (opcode & 0x0FFF));
-				System.out.println("jump to address nnn + V[0]");
+				System.out.printf("jmp %X\n", pc);
 				return;
 			case 0xC:
 				V[nibble1] = (short) ((int) java.lang.Math.random() & (opcode & 0x00FF));
 				System.out.println("set Vx = random number & nn");
 				return;
 			case 0xD:
-
+				
 				short x = V[nibble1];
 				short y = V[nibble2];
 				short height = nibble3;
@@ -247,8 +247,7 @@ public class Chip {
 					}
 					// drawFlag = true;
 				}
-				System.out.println(
-						"draws sprite at coordinate Vx,Vy. VF is set to 1 if there is a collision between sprites and 0 if there is not");
+				System.out.printf("draw");
 				return;
 			case 0xE:
 				switch (opcode & 0x00FF) {
@@ -256,13 +255,13 @@ public class Chip {
 						if (key[V[nibble1]] != 0) {
 							pc += 2;
 						}
-						System.out.println("skip next instruction if key stored in Vx is pressed");
+						System.out.printf("skip if ", key[V[nibble1]], " != 0\n");
 						return;
 					case 0xA1:
 						if (key[V[nibble1]] == 0) {
 							pc += 2;
 						}
-						System.out.println("skip next instruction if key stored in Vx is not pressed");
+						System.out.printf("skip if ", key[V[nibble1]], " == 0\n");
 						return;
 				}
 
@@ -270,7 +269,7 @@ public class Chip {
 				switch (opcode & 0x00FF) {
 					case 0x07:
 						V[nibble1] = delayTimer;
-						System.out.println("set Vx to the value of the delay timer");
+						System.out.printf("set %X", V[nibble1], " = \n", delayTimer);
 						return;
 					case 0x0A:
 						for (int i = 0; i < key.length; i++) {
