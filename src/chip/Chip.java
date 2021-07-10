@@ -175,7 +175,7 @@ public class Chip {
 						System.out.printf("set %X", V[nibble1], " -= %X.", V[nibble2], "flag = %X\n", V[0xF]);
 						return;
 					case 6:
-						short leastSigBit = (short) (V[nibble1] & 0x01); 
+						short leastSigBit = (short) (V[nibble1] & 0x01);
 						V[0xF] = leastSigBit;
 						V[nibble1] >>= 1;
 						System.out.printf("str %X", leastSigBit, " in VF. set %X", V[nibble1], " >>= 1\n");
@@ -187,7 +187,8 @@ public class Chip {
 							V[0xF] = 1;
 						}
 						V[nibble1] = (short) ((V[nibble2] - V[nibble1]) % 256);
-						System.out.printf("set %X", V[nibble1], " = %X.", V[nibble2], " - %X.", V[nibble1], "flag = %X\n", V[0xF]);
+						System.out.printf("set %X", V[nibble1], " = %X.", V[nibble2], " - %X.", V[nibble1],
+								"flag = %X\n", V[0xF]);
 						return;
 					case 0xE:
 						short mostSigBit = (short) (V[nibble1] & 0xF);
@@ -216,7 +217,7 @@ public class Chip {
 				System.out.println("set Vx = random number & nn");
 				return;
 			case 0xD:
-				
+
 				short x = V[nibble1];
 				short y = V[nibble2];
 				short height = nibble3;
@@ -269,35 +270,35 @@ public class Chip {
 				switch (opcode & 0x00FF) {
 					case 0x07:
 						V[nibble1] = delayTimer;
-						System.out.printf("set %X", V[nibble1], " = \n", delayTimer);
+						System.out.printf("set %X", V[nibble1], " = %X\n", delayTimer);
 						return;
 					case 0x0A:
 						for (int i = 0; i < key.length; i++) {
 							if (key[i] == 1) {
 								V[nibble1] = key[i];
-								System.out.println(
-										"a key press is awaited, and then stored in Vx. (this instruction is repeated until a key is pressed");
+								System.out.printf("Key pressed\n");
 								return;
 							}
 						}
-						pc -= 2;
-						System.out.println("key is not pressed, pc -=2, check for key press again");
+						pc -= 2; // pc -= 2 so that program counter does not progress to next instruction
+						System.out.printf("await key press\n");
 						return;
 					case 0x15:
 						delayTimer = V[nibble1];
-						System.out.println("set the delay timer to Vx");
+						System.out.printf("set DT %X", delayTimer, " = %X\n", V[nibble1]);
 						return;
 					case 0x18:
 						soundTimer = V[nibble1];
-						System.out.println("set sound timer to Vx");
+						System.out.printf("set ST %X", soundTimer, " = %X\n", V[nibble1]);
 						return;
 					case 0x1E:
 						I += V[nibble1];
-						System.out.println("add Vx to I. VF is not affected");
+						System.out.printf("add, %d", I, " += %X\n", V[nibble1]);
 						return;
 					case 0x29:
+						// set I to the location of the sprite for the character in Vx
 						I = V[nibble1];
-						System.out.println("set I to the location of the sprite for the character in Vx");
+						System.out.printf("set %d", I, " = %X\n", V[nibble1]);
 						return;
 					case 0x33:
 						// converts Vx to binary and stores each succesivly in memory
@@ -306,6 +307,7 @@ public class Chip {
 						memory[I + 2] = (short) ((V[nibble1] / 100) % 10);
 						System.out.println(
 								"Stores BCD of Vx (first 3 bits) in memory starting at I (first bit at I, second I + 1, third I + 2)");
+						System.out.printf("");
 						return;
 					case 0x55:
 						for (int i = 0; i <= nibble1; i++) {
