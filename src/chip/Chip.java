@@ -214,7 +214,7 @@ public class Chip {
 				return;
 			case 0xC:
 				V[nibble1] = (short) ((int) java.lang.Math.random() & (opcode & 0x00FF));
-				System.out.println("set Vx = random number & nn");
+				System.out.println("set Vx = rand");
 				return;
 			case 0xD:
 
@@ -301,25 +301,26 @@ public class Chip {
 						System.out.printf("set %d", I, " = %X\n", V[nibble1]);
 						return;
 					case 0x33:
-						// converts Vx to binary and stores each succesivly in memory
+						// Stores BCD of Vx (first 3 bits) in memory starting at I
+						// (first bit at I, second I + 1, third I + 2)
 						memory[I] = (short) (V[nibble1] / 100);
 						memory[I + 1] = (short) ((V[nibble1] / 10) % 10);
 						memory[I + 2] = (short) ((V[nibble1] / 100) % 10);
-						System.out.println(
-								"Stores BCD of Vx (first 3 bits) in memory starting at I (first bit at I, second I + 1, third I + 2)");
-						System.out.printf("");
+						System.out.printf("set BCD %X", V[nibble1], " in %X\n", memory[I]);
 						return;
 					case 0x55:
+						// store V0 to Vx in memory starting at address I
 						for (int i = 0; i <= nibble1; i++) {
 							memory[I + i] = V[i];
 						}
-						System.out.println("store V0 to Vx in memory starting at address I");
+						System.out.printf("reg_dump %X", V[0], " to %X\n", V[nibble1]);
 						return;
 					case 0x65:
+						// Fills V0 to Vx with values from memory starting at address I
 						for (int i = 0; i <= nibble1; i++) {
 							V[i] = memory[I + i];
 						}
-						System.out.println("Fills V0 to Vx with values from memory starting at address I");
+						System.out.printf("reg_load %X", V[0], " to %X\n", V[nibble1]);
 						return;
 				}
 		}
