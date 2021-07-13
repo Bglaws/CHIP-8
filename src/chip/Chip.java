@@ -330,20 +330,25 @@ public class Chip {
 	public static void main(String[] args) {
 
 		String path = null;
+		Chip chip = null;
 
-		if (args.length > 1) {
-			path = args[1];
+		if (args.length > 0) {
+			path = args[0];
 		} else {
-			System.out.print("no file path provided");
+			System.out.println("no file path provided");
 			System.exit(1);
 		}
 		try {
-			Chip chip = new Chip(path);
+			chip = new Chip(path);
 		} catch (FileNotFoundException e) {
 			System.out.println(e.getMessage());
 			System.exit(1);
 		}
 
+		while (true) {
+			short instr = chip.fetch();
+			chip.decode(instr);
+		}
 	}
 
 }
