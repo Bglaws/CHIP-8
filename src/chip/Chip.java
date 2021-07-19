@@ -3,6 +3,7 @@ import java.nio.file.Files;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class Chip {
@@ -40,8 +41,10 @@ public class Chip {
 	// Chip constructor
 	public Chip(String path) throws FileNotFoundException {
 		
+	//initialize with the proper size for rom
+		byte[] file;
 		try {
-			byte[] file = Files.readAllBytes(new File(path).toPath());
+			file = Files.readAllBytes(new File(path).toPath());
 		}
 		catch(IOException e) {
 			System.out.println(e.getMessage());
