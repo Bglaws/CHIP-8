@@ -1,6 +1,5 @@
 
 import java.nio.file.Files;
-import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,8 +40,7 @@ public class Chip {
 	// Chip constructor
 	public Chip(String path) throws FileNotFoundException {
 		
-	//initialize with the proper size for rom
-		byte[] file;
+		byte[] file = new byte[4000];
 		try {
 			file = Files.readAllBytes(new File(path).toPath());
 		}
@@ -72,7 +70,6 @@ public class Chip {
 
 		opcode = fetch();
 		decode(opcode);
-
 	}
 
 	// fetches opcode
@@ -258,7 +255,7 @@ public class Chip {
 					}
 					// drawFlag = true;
 				}
-				System.out.printf("draw");
+				System.out.printf("draw \n");
 				return;
 			case 0xE:
 				switch (opcode & 0x00FF) {
@@ -266,13 +263,13 @@ public class Chip {
 						if (key[V[nibble1]] != 0) {
 							pc += 2;
 						}
-						System.out.printf("skip if ", key[V[nibble1]], " != 0\n");
+						System.out.printf("skip if %X", key[V[nibble1]], " != 0\n");
 						return;
 					case 0xA1:
 						if (key[V[nibble1]] == 0) {
 							pc += 2;
 						}
-						System.out.printf("skip if ", key[V[nibble1]], " == 0\n");
+						System.out.printf("skip if %X", key[V[nibble1]], " == 0\n");
 						return;
 				}
 
