@@ -64,6 +64,16 @@ public class Chip {
 		pc = 0x200;
 
 	}
+	public Chip() {
+		for (int i = 0x000; i < FONTSET_SIZE; i++) {
+			memory[i + 0x050] = fontset[i];
+		}
+
+		// stack implemented at the end of memory
+		stackPointer = 0xF00;
+		// ROM loaded in at this address
+		pc = 0x200;
+	}
 
 	// emulation cycle
 	public void emulateCycle() {
