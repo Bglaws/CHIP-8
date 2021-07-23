@@ -39,12 +39,11 @@ public class Chip {
 
 	// Chip constructor
 	public Chip(String path) throws FileNotFoundException {
-		
+
 		byte[] file = new byte[4000];
 		try {
 			file = Files.readAllBytes(new File(path).toPath());
-		}
-		catch(IOException e) {
+		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
 
@@ -55,7 +54,7 @@ public class Chip {
 		// Rom is read in at 0x200
 		int j = 0x200;
 		for (int index = 0; index < file.length; index++) {
-		
+
 			memory[j++] = file[index];
 		}
 		// stack implemented at the end of memory
@@ -64,6 +63,7 @@ public class Chip {
 		pc = 0x200;
 
 	}
+
 	public Chip() {
 		for (int i = 0x000; i < FONTSET_SIZE; i++) {
 			memory[i + 0x050] = fontset[i];
@@ -366,6 +366,11 @@ public class Chip {
 			short instr = chip.fetch();
 			chip.decode(instr);
 		}
+	}
+
+	// helper methods
+	public short getPC() {
+		return this.pc;
 	}
 
 }
