@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.swing.JFrame;
+
 public class Chip {
 
 	private short opcode;
@@ -73,6 +75,12 @@ public class Chip {
 		stackPointer = 0xF00;
 		// ROM loaded in at this address
 		pc = 0x200;
+	}
+
+	public void gameWindow() {
+		Display display = new Display();
+		display.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 	}
 
 	// emulation cycle
