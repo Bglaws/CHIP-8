@@ -14,9 +14,10 @@ public class Chip_Test {
 		// test 1
 		chip.decode((short) 0x1111);
 		if (chip.getPC() != 0x111) {
-			System.out.println("Test 1 failed")
+			System.out.println("Test 1 failed");
 			result = -1;
 		}
+		return result;
 
 	}
 
