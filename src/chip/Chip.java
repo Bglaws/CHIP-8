@@ -66,6 +66,7 @@ public class Chip {
 
 	}
 
+	//
 	public Chip() {
 		for (int i = 0x000; i < FONTSET_SIZE; i++) {
 			memory[i + 0x050] = fontset[i];
@@ -78,9 +79,7 @@ public class Chip {
 	}
 
 	public void gameWindow() {
-		Display display = new Display();
-		display.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		Display display = new Display(gfx);
 	}
 
 	// emulation cycle

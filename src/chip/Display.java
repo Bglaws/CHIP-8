@@ -11,8 +11,7 @@ public class Display {
 	 * windowInit method is static for testing purposes but will be changed to non
 	 * static so that Chip class can make a display object
 	 */
-
-	public Display() {
+	public Display(short[] gfx) {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
 		JFrame gameWindow = new JFrame("CHIP-8");
@@ -28,7 +27,7 @@ public class Display {
 		// gameWindow.pack();
 	}
 
-	public static void main(String[] args) {
-
-	}
+	// public static void main(String[] args) {
+	// Display d = new Display();
+	// }
 }

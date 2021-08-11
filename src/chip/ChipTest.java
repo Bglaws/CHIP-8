@@ -3,22 +3,34 @@ import java.io.FileNotFoundException;
 
 import org.junit.Test;
 
-public class Chip_Test {
+public class ChipTest {
 
 	@Test
-	static int test_jmp() {
-		int result = 0;
-
+	void testDisplayClear() {
 		Chip chip = new Chip();
 
-		// test 1
-		chip.decode((short) 0x1111);
-		if (chip.getPC() != 0x111) {
-			System.out.println("Test 1 failed");
-			result = -1;
-		}
-		return result;
+		chip.decode((short) 0x00E0);
+		assert chip.getPC() == 0x0E0;
+	}
 
+	@Test
+	void testFlowReturn() {
+		Chip chip = new Chip();
+		chip.decode((short) 0x00EE);
+		assert chip.getPC() == 0x0EE;
+	}
+
+	@Test
+	void testJmp() {
+		Chip chip = new Chip();
+		chip.decode((short) 0x1111);
+		assert chip.getPC() == 0x111;
+	}
+
+	@Test
+	void testCall() {
+		Chip chip = new Chip();
+		chip.decode((short) 0x2);
 	}
 
 	public static void main(String[] args) {
